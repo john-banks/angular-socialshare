@@ -104,7 +104,78 @@ angular.module('djds4rce.angular-socialshare', [])
       });
     }
   };
-}]).directive('twitter',['$timeout', '$window',function($timeout, $window) {
+}]).directive('facebookSend', ['$timeout','$http', function($timeout,$http) {
+  return {
+    scope: {
+      shares: '='
+    },
+    transclude: true,
+    template: '<div class="facebookButton">' +
+      '<div class="pluginButton">' +
+        '<div class="pluginButtonContainer">' +
+          '<div class="pluginButtonImage">' +
+            '<button type="button">' +
+              '<i class="pluginButtonIcon img sp_plugin-button-2x sx_plugin-button-2x_favblue"></i>' +
+            '</button>' +
+          '</div>' +
+          '<span class="pluginButtonLabel">Share</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>',
+    link: function(scope, element, attr) {
+      $timeout(function(){
+        element.bind('click',function(e){
+            console.log(attr.url);
+          FB.ui(
+            {method: 'send',
+              link: attr.url
+          });
+          e.preventDefault();
+        });
+      });
+    }
+  };
+}])
+.directive('facebookRequest', ['$timeout','$http', function($timeout,$http) {
+  return {
+    scope: {
+      shareCallback: '&'
+    },
+    transclude: true,
+    template: '<div class="facebookButton">' +
+      '<div class="pluginButton">' +
+        '<div class="pluginButtonContainer">' +
+          '<div class="pluginButtonImage">' +
+            '<button type="button">' +
+              '<i class="pluginButtonIcon img sp_plugin-button-2x sx_plugin-button-2x_favblue"></i>' +
+            '</button>' +
+          '</div>' +
+          '<span class="pluginButtonLabel">Send</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>',
+    link: function(scope, element, attr) {
+        $timeout(function(){
+            element.bind('click',function(e){
+                console.log('in click?????');
+                console.log(attr.url);
+                scope.shareCallback();
+                FB.ui(
+                    {method: 'apprequests',
+                        message: attr.text,
+                        link: attr.url
+                },function(response){
+                    if(scope.shareCallback){
+                        scope.shareCallback({shareType:'facebookRequest',response:response});
+                    }
+                });
+                e.preventDefault();
+            });
+        });
+    }
+  };
+}])
+.directive('twitter',['$timeout', '$window',function($timeout, $window) {
   return {
     link: function(scope, element, attr) {
       $timeout(function() {
@@ -173,6 +244,9 @@ angular.module('djds4rce.angular-socialshare', [])
           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
         })();
       }
+        gapi.plus.render(element[0],{
+            'data-href': attr.href
+        });
     }
   };
 }]).directive('tumblrText',[function(){
